@@ -1,0 +1,11 @@
+{
+    "server": {
+        "base_path": "https://wikipedia.org",
+        "token": null
+    },
+    "app": {
+        "translate_to_lang": "German",
+        "translate_from_lang": "english",
+        "free_extracts_remaining": 10
+    }
+}
