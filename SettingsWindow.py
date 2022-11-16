@@ -47,6 +47,18 @@ class SettingsWindow(QtWidgets.QDialog):
         self.lang_to_checkbox.currentIndexChanged.connect(self.set_lang_to)
         self.layout.addWidget(self.lang_to_checkbox)
 
+        self.logout_button = QtWidgets.QPushButton('Login with Google')
+        self.layout.addWidget(self.logout_button)
+
+        statistics_label = QtWidgets.QLabel(
+            "<b>Statistics:</b><br>"
+            "Free extractions remaining: <b>%d</b><br>"
+            "Screenshots made: <b>123</b><br>"
+            "Number of text extractions: <b>123</b><br>"
+            "Number of translates: <b>123</b>" % (self.app_settings['app']['free_extracts_remaining'])
+        )
+        self.layout.addWidget(statistics_label)
+
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
 
