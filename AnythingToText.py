@@ -19,7 +19,7 @@ class AnythingToText(QtWidgets.QWidget):
 
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
-        self.setWindowTitle("TextShot")
+        self.setWindowTitle("Anything To Text")
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Dialog)
         self.setWindowState(self.windowState() | Qt.WindowFullScreen)
         self.screen = QtWidgets.QApplication.screenAt(QtGui.QCursor.pos()).grabWindow(0)
@@ -76,6 +76,12 @@ class AnythingToText(QtWidgets.QWidget):
         settings_button = QtWidgets.QPushButton(self)
         settings_button.setIcon(QtGui.QIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__) + "/img/gear.png"))))
         settings_button.setGeometry(QtCore.QRect(self.end.x() - 245, self.end.y() + 3, 35, 25))
+
+        def open_settings():
+            self.parent().open_settings()
+            self.destroy()
+
+        settings_button.clicked.connect(open_settings)
         copy_img_button = QtWidgets.QPushButton("Copy image", self)
         copy_img_button.setGeometry(QtCore.QRect(self.end.x() - 215, self.end.y() + 3, 110, 25))
         copy_img_button.clicked.connect(lambda: self.copy_screenshot_to_clipboard(shot))
