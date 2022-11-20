@@ -63,5 +63,5 @@ class SettingsWindow(QtWidgets.QDialog):
         self.hide()
 
     def set_lang_to(self):
-        self.app_settings['app']['translate_to_lang'] = self.lang_to_checkbox.currentText()
+        self.app_settings['app']['translate_to_lang'] = self.lang_to_combobox.currentText()
 
