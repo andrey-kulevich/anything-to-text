@@ -1,7 +1,3 @@
-import io
-import pathlib
-import subprocess
-import os
 import requests
 import json
 from threading import Timer
@@ -69,7 +65,11 @@ class SettingsWindow(QtWidgets.QDialog):
     def start_login_loop(self):
         start_auth_res = requests.get(self.app_settings['server']['base_path'] + 'login').json()
         webbrowser.open(start_auth_res['login_url'])
-        def check_login():
+        timeout = 60
+        def check_login(timeout):
+            if timeout == 0:
+                self.timer.cancel()
+            timeout = timeout - 1
             check_auth_res = requests.get(
                 self.app_settings['server']['base_path'] + 'check_login', 
                 params={'anon_token': start_auth_res['anon_token']}).json()
@@ -79,7 +79,7 @@ class SettingsWindow(QtWidgets.QDialog):
                     json.dump(self.app_settings, openfile, indent=4)
                 self.login_button.setText('Logged in as %s' %(check_auth_res['user']['name']))
                 self.timer.cancel()
-        self.timer = Repeat(1.0, check_login)
+        self.timer = Repeat(1.0, lambda: check_login(timeout))
         self.timer.start()
 
     def save_settings(self):

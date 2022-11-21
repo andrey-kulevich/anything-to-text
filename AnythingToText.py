@@ -4,8 +4,8 @@ import subprocess
 import os
 import platform
 import pyperclip
-import pytesseract
 import requests
+import json
 from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
@@ -16,6 +16,7 @@ class AnythingToText(QtWidgets.QWidget):
     coordinates_label = None
     start, end = QtCore.QPoint(), QtCore.QPoint()
     active_mouse_events = True
+    app_settings = None
 
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
@@ -29,6 +30,10 @@ class AnythingToText(QtWidgets.QWidget):
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
         self.coordinates_label = QtWidgets.QLabel(self)
         self.coordinates_label.setStyleSheet("color: #fff;")
+
+        # import the settings
+        with open('settings.json', 'r') as openfile:
+            self.app_settings = json.load(openfile)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -126,18 +131,13 @@ class AnythingToText(QtWidgets.QWidget):
         buffer = QtCore.QBuffer()
         buffer.open(QtCore.QBuffer.ReadWrite)
         img.save(buffer, "PNG")
-        pil_img = Image.open(io.BytesIO(buffer.data()))
         buffer.close()
 
-        try:
-            result = pytesseract.image_to_string(pil_img)
-            # result = requests.post(url='some url', headers={}, auth={})
-        except RuntimeError as error:
-            print(f"ERROR: An error occurred when trying to process the image: {error}")
-            return
-
-        if result:
-            pyperclip.copy(result)
+        res = requests.post(self.app_settings['server']['base_path'] + 'anything_to_text', files={'image': buffer.data()})
+        extracted_text = res.json()['extracted_text']
+        
+        if res.status_code == 200:
+            pyperclip.copy(extracted_text)
             platform_name = platform.uname().system
             if platform_name == "Linux":
                 pass
@@ -148,7 +148,7 @@ class AnythingToText(QtWidgets.QWidget):
                 pass
                 # toaster = ToastNotifier()
                 # toaster.show_toast("Success", "Text is copied to clipboard")
-            print(f'INFO: Copied "{result}" to the clipboard')
+            print('INFO: Copied to the clipboard: ' + extracted_text)
         else:
             print(f"INFO: Unable to read text from image, did not copy")
         self.destroy()
