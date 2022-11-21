@@ -1,11 +1,16 @@
 {
     "server": {
-        "base_path": "https://wikipedia.org",
-        "token": null
+        "base_path": "https://att.proekt-obroten.ru/api/",
+        "user": {
+            "email": null,
+            "ga_token": null,
+            "name": null,
+            "photo_url": null,
+            "uid": null
+        }
     },
     "app": {
         "translate_to_lang": "German",
-        "translate_from_lang": "English",
         "free_extracts_remaining": 10
     }
 }
