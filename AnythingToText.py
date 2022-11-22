@@ -80,7 +80,7 @@ class AnythingToText(QtWidgets.QWidget):
         )
         settings_button = QtWidgets.QPushButton(self)
         settings_button.setIcon(QtGui.QIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__) + "/img/gear.png"))))
-        settings_button.setGeometry(QtCore.QRect(self.end.x() - 245, self.end.y() + 3, 35, 25))
+        settings_button.setGeometry(QtCore.QRect(self.end.x() - 350, self.end.y() + 3, 35, 25))
 
         def open_settings():
             self.parent().open_settings()
@@ -88,14 +88,18 @@ class AnythingToText(QtWidgets.QWidget):
 
         settings_button.clicked.connect(open_settings)
         copy_img_button = QtWidgets.QPushButton("Copy image", self)
-        copy_img_button.setGeometry(QtCore.QRect(self.end.x() - 215, self.end.y() + 3, 110, 25))
+        copy_img_button.setGeometry(QtCore.QRect(self.end.x() - 320, self.end.y() + 3, 110, 25))
         copy_img_button.clicked.connect(lambda: self.copy_screenshot_to_clipboard(shot))
+        translate_button = QtWidgets.QPushButton("Translate text", self)
+        translate_button.setGeometry(QtCore.QRect(self.end.x() - 215, self.end.y() + 3, 110, 25))
+        translate_button.clicked.connect(lambda: self.copy_screenshot_to_clipboard(shot))
         copy_text_button = QtWidgets.QPushButton("Extract text", self)
         copy_text_button.setGeometry(QtCore.QRect(self.end.x() - 110, self.end.y() + 3, 110, 25))
         copy_text_button.clicked.connect(lambda: self.extract_text(shot))
         settings_button.show()
         copy_img_button.show()
         copy_text_button.show()
+        translate_button.show()
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.active_mouse_events = False
 
@@ -133,7 +137,15 @@ class AnythingToText(QtWidgets.QWidget):
         img.save(buffer, "PNG")
         buffer.close()
 
-        res = requests.post(self.app_settings['server']['base_path'] + 'anything_to_text', files={'image': buffer.data()})
+        res = None
+        if self.app_settings['app']['default_extract_lang'] is False:
+            res = requests.post(
+                self.app_settings['server']['base_path'] + 'anything_to_text', 
+                files={'image': buffer.data()},
+                params={'lang': self.app_settings['app']['extract_lang']}
+            )
+        else:
+            res = requests.post(self.app_settings['server']['base_path'] + 'anything_to_text', files={'image': buffer.data()})
         extracted_text = res.json()['extracted_text']
         
         if res.status_code == 200:

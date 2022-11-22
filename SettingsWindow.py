@@ -10,6 +10,12 @@ class Repeat(Timer):
         while not self.finished.wait(self.interval):
             self.function(*self.args, **self.kwargs)
 
+language_map = {
+    "rus": "Russian",
+    "eng": "English",
+    "ara": "Arabic"
+}
+
 class SettingsWindow(QtWidgets.QDialog):
     app_settings = None
 
@@ -34,12 +40,25 @@ class SettingsWindow(QtWidgets.QDialog):
         self.buttonBox.accepted.connect(self.save_settings)
         self.buttonBox.rejected.connect(lambda: self.hide())
 
+        extract_lang_combobox_label = QtWidgets.QLabel("Language of extraction")
+        self.layout.addWidget(extract_lang_combobox_label)
+        self.extract_lang_combobox = QtWidgets.QComboBox()
+        self.extract_lang_combobox.addItems(["English", "Russian", "Arabic"])
+        self.extract_lang_combobox.currentIndexChanged.connect(self.set_extract_lang)
+        self.extract_lang_combobox.setCurrentText(language_map[self.app_settings['app']['extract_lang']])
+        self.layout.addWidget(self.extract_lang_combobox)
+
+        self.extract_lang_checkbox = QtWidgets.QCheckBox("Define extraction language automatically")
+        self.extract_lang_checkbox.toggled.connect(self.set_extract_lang)
+        self.extract_lang_checkbox.setChecked(self.app_settings['app']['default_extract_lang'])
+        self.layout.addWidget(self.extract_lang_checkbox)
+
         lang_to_combobox_label = QtWidgets.QLabel("Language to which you want to translate")
         self.layout.addWidget(lang_to_combobox_label)
-
         self.lang_to_combobox = QtWidgets.QComboBox()
         self.lang_to_combobox.addItems(["Russian", "English", "Arabic"])
         self.lang_to_combobox.currentIndexChanged.connect(self.set_lang_to)
+        self.lang_to_combobox.setCurrentText(language_map[self.app_settings['app']['translate_to_lang']])
         self.layout.addWidget(self.lang_to_combobox)
 
         self.login_button = QtWidgets.QPushButton(
@@ -53,9 +72,9 @@ class SettingsWindow(QtWidgets.QDialog):
         statistics_label = QtWidgets.QLabel(
             "<b>Statistics:</b><br>"
             "Free extractions remaining: <b>%d</b><br>"
-            "Screenshots made: <b>123</b><br>"
-            "Number of text extractions: <b>123</b><br>"
-            "Number of translates: <b>123</b>" % (10)
+            "Screenshots made: <b>121</b><br>"
+            "Number of text extractions: <b>37</b><br>"
+            "Number of translates: <b>25</b>" % (10)
         )
         self.layout.addWidget(statistics_label)
 
@@ -88,5 +107,8 @@ class SettingsWindow(QtWidgets.QDialog):
         self.hide()
 
     def set_lang_to(self):
-        self.app_settings['app']['translate_to_lang'] = self.lang_to_combobox.currentText()
+        self.app_settings['app']['translate_to_lang'] = self.lang_to_combobox.currentText().lower()[0:3]
+
+    def set_extract_lang(self):
+        self.app_settings['app']['extract_lang'] = self.extract_lang_combobox.currentText().lower()[0:3]
 

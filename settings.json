@@ -1,6 +1,6 @@
 {
     "server": {
-        "base_path": "https://att.proekt-obroten.ru/api/",
+        "base_path": null,
         "user": {
             "email": null,
             "ga_token": null,
@@ -10,7 +10,9 @@
         }
     },
     "app": {
-        "translate_to_lang": "German",
+        "extract_lang": "rus",
+        "default_extract_lang": true,
+        "translate_to_lang": "ara",
         "free_extracts_remaining": 10
     }
 }
