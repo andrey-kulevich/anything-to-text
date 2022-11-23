@@ -1,15 +1,9 @@
 from AnythingToText import *
 from SettingsWindow import *
-import keyboard
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
-
-class KeyBoardManager(QtCore.QObject):
-    runSignal = QtCore.pyqtSignal()
-
-    def start(self):
-        keyboard.add_hotkey("F1", self.runSignal.emit, suppress=True)
+from Shortcut import ShortCutListener
 
 
 class MainWindow(QtWidgets.QWidget):
@@ -33,9 +27,10 @@ class MainWindow(QtWidgets.QWidget):
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
 
-        manager = KeyBoardManager(self)
-        manager.runSignal.connect(self.do_screenshot)
-        manager.start()
+        keyboardManager = ShortCutListener(self)
+        keyboardManager.runSignal.connect(self.do_screenshot)
+        keyboardManager.run()
+
 
     def do_screenshot(self):
         self.screenshot_app = AnythingToText(self)
