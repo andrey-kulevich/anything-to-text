@@ -2,13 +2,13 @@ from AnythingToText import *
 from SettingsWindow import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
-
 from Shortcut import ShortCutListener
 
 
 class MainWindow(QtWidgets.QWidget):
     screenshot_app = None
     settings_window = None
+    keyboard_manager = None
 
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
@@ -27,10 +27,9 @@ class MainWindow(QtWidgets.QWidget):
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
 
-        keyboardManager = ShortCutListener(self)
-        keyboardManager.runSignal.connect(self.do_screenshot)
-        keyboardManager.run()
-
+        self.keyboard_manager = ShortCutListener(self)
+        self.keyboard_manager.runSignal.connect(self.do_screenshot)
+        self.keyboard_manager.run()
 
     def do_screenshot(self):
         self.screenshot_app = AnythingToText(self)
@@ -40,3 +39,7 @@ class MainWindow(QtWidgets.QWidget):
         if self.settings_window is None:
             self.settings_window = SettingsWindow(self)
         self.settings_window.show()
+
+    def quit_app(self):
+        self.keyboard_manager.stop()
+        QtWidgets.QApplication.quit()

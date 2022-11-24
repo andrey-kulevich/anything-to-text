@@ -1,14 +1,18 @@
 import requests
 import json
+import os
+import sys
 from threading import Timer
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 import webbrowser
 
+
 class Repeat(Timer):
     def run(self):
         while not self.finished.wait(self.interval):
             self.function(*self.args, **self.kwargs)
+
 
 language_map = {
     "rus": "Russian",
@@ -16,11 +20,13 @@ language_map = {
     "ara": "Arabic"
 }
 
+
 class SettingsWindow(QtWidgets.QDialog):
     app_settings = None
 
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
+        self.timer = None
         self.setWindowTitle("Anything To Text: Settings")
         self.setWindowFlags(Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
 
@@ -30,8 +36,13 @@ class SettingsWindow(QtWidgets.QDialog):
         qt_rectangle.moveCenter(center_point)
         self.move(qt_rectangle.topLeft())
 
+        app_path = ''
+        if getattr(sys, 'frozen', False):
+            app_path = os.path.dirname(sys.executable)
+        elif __file__:
+            app_path = os.path.dirname(__file__)
         # import the settings
-        with open('settings.json', 'r') as openfile:
+        with open(os.path.join(app_path, 'settings.json'), 'r') as openfile:
             self.app_settings = json.load(openfile)
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -62,9 +73,9 @@ class SettingsWindow(QtWidgets.QDialog):
         self.layout.addWidget(self.lang_to_combobox)
 
         self.login_button = QtWidgets.QPushButton(
-            'Login with Google' 
-            if self.app_settings['server']['user']['ga_token'] is None 
-            else 'Logged in as %s' %(self.app_settings['server']['user']['name'])
+            'Login with Google'
+            if self.app_settings['server']['user']['ga_token'] is None
+            else 'Logged in as %s' % (self.app_settings['server']['user']['name'])
         )
         self.login_button.clicked.connect(self.start_login_loop)
         self.layout.addWidget(self.login_button)
@@ -85,19 +96,21 @@ class SettingsWindow(QtWidgets.QDialog):
         start_auth_res = requests.get(self.app_settings['server']['base_path'] + 'login').json()
         webbrowser.open(start_auth_res['login_url'])
         timeout = 60
+
         def check_login(timeout):
             if timeout == 0:
                 self.timer.cancel()
             timeout = timeout - 1
             check_auth_res = requests.get(
-                self.app_settings['server']['base_path'] + 'check_login', 
+                self.app_settings['server']['base_path'] + 'check_login',
                 params={'anon_token': start_auth_res['anon_token']}).json()
             if check_auth_res['authorized'] is True:
                 self.app_settings['server']['user'] = check_auth_res['user']
                 with open('settings.json', 'w') as openfile:
                     json.dump(self.app_settings, openfile, indent=4)
-                self.login_button.setText('Logged in as %s' %(check_auth_res['user']['name']))
+                self.login_button.setText('Logged in as %s' % (check_auth_res['user']['name']))
                 self.timer.cancel()
+
         self.timer = Repeat(1.0, lambda: check_login(timeout))
         self.timer.start()
 
@@ -111,4 +124,3 @@ class SettingsWindow(QtWidgets.QDialog):
 
     def set_extract_lang(self):
         self.app_settings['app']['extract_lang'] = self.extract_lang_combobox.currentText().lower()[0:3]
-

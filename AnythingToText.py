@@ -1,12 +1,11 @@
-import io
 import pathlib
 import subprocess
 import os
+import sys
 import platform
 import pyperclip
 import requests
 import json
-from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 # from win10toast import ToastNotifier
@@ -31,8 +30,13 @@ class AnythingToText(QtWidgets.QWidget):
         self.coordinates_label = QtWidgets.QLabel(self)
         self.coordinates_label.setStyleSheet("color: #fff;")
 
+        app_path = ''
+        if getattr(sys, 'frozen', False):
+            app_path = os.path.dirname(sys.executable)
+        elif __file__:
+            app_path = os.path.dirname(__file__)
         # import the settings
-        with open('settings.json', 'r') as openfile:
+        with open(os.path.join(app_path, 'settings.json'), 'r') as openfile:
             self.app_settings = json.load(openfile)
 
     def keyPressEvent(self, event):
