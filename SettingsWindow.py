@@ -23,6 +23,7 @@ language_map = {
 
 class SettingsWindow(QtWidgets.QDialog):
     app_settings = None
+    app_path = ''
 
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
@@ -36,13 +37,12 @@ class SettingsWindow(QtWidgets.QDialog):
         qt_rectangle.moveCenter(center_point)
         self.move(qt_rectangle.topLeft())
 
-        app_path = ''
         if getattr(sys, 'frozen', False):
-            app_path = os.path.dirname(sys.executable)
+            self.app_path = os.path.dirname(sys.executable)
         elif __file__:
-            app_path = os.path.dirname(__file__)
+            self.app_path = os.path.dirname(__file__)
         # import the settings
-        with open(os.path.join(app_path, 'settings.json'), 'r') as openfile:
+        with open(os.path.join(self.app_path, 'settings.json'), 'r') as openfile:
             self.app_settings = json.load(openfile)
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -85,7 +85,7 @@ class SettingsWindow(QtWidgets.QDialog):
             "Free extractions remaining: <b>%d</b><br>"
             "Screenshots made: <b>121</b><br>"
             "Number of text extractions: <b>37</b><br>"
-            "Number of translates: <b>25</b>" % (10)
+            "Number of translates: <b>25</b>" % (self.app_settings['app']['free_extracts_remaining'])
         )
         self.layout.addWidget(statistics_label)
 
@@ -115,7 +115,7 @@ class SettingsWindow(QtWidgets.QDialog):
         self.timer.start()
 
     def save_settings(self):
-        with open('settings.json', 'w') as openfile:
+        with open(os.path.join(self.app_path, 'settings.json'), 'w') as openfile:
             json.dump(self.app_settings, openfile, indent=4)
         self.hide()
 

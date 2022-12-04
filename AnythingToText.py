@@ -17,6 +17,7 @@ class AnythingToText(QtWidgets.QWidget):
     start, end = QtCore.QPoint(), QtCore.QPoint()
     active_mouse_events = True
     app_settings = None
+    app_path = ''
 
     def __init__(self, parent=None, flags=Qt.WindowFlags()):
         super().__init__(parent=parent, flags=flags)
@@ -37,12 +38,11 @@ class AnythingToText(QtWidgets.QWidget):
         self.spinnerLabel.setMovie(self.spinner)
 
         # import the settings
-        app_path = ''
         if getattr(sys, 'frozen', False):
-            app_path = os.path.dirname(sys.executable)
+            self.app_path = os.path.dirname(sys.executable)
         elif __file__:
-            app_path = os.path.dirname(__file__)
-        settings_path = os.path.join(app_path, 'settings.json')
+            self.app_path = os.path.dirname(__file__)
+        settings_path = os.path.join(self.app_path, 'settings.json')
         if os.path.isfile(settings_path) is True:
             with open(settings_path, 'r') as openfile:
                 self.app_settings = json.load(openfile)
@@ -167,18 +167,29 @@ class AnythingToText(QtWidgets.QWidget):
         """
         extract text from given image
         """
-        buffer = QtCore.QBuffer()
-        buffer.open(QtCore.QBuffer.ReadWrite)
-        img.save(buffer, "PNG")
-        buffer.close()
+        if self.app_settings['server']['user']['ga_token'] is not None \
+                or self.app_settings['app']['free_extracts_remaining'] > 0:
+            buffer = QtCore.QBuffer()
+            buffer.open(QtCore.QBuffer.ReadWrite)
+            img.save(buffer, "PNG")
+            buffer.close()
 
-        self.spinnerLabel.setGeometry(QtCore.QRect(
-            ((self.start.x() + self.end.x()) / 2) - 35, ((self.start.y() + self.end.y()) / 2) - 35, 70, 70))
-        self.spinner.start()
+            self.spinnerLabel.setGeometry(QtCore.QRect(
+                ((self.start.x() + self.end.x()) / 2) - 35, ((self.start.y() + self.end.y()) / 2) - 35, 70, 70))
+            self.spinner.start()
 
-        request = ExtractionRequest(self)
-        request.runSignal.connect(self.finish_extraction)
-        request.run(self.app_settings, buffer.data())
+            request = ExtractionRequest(self)
+            request.runSignal.connect(self.finish_extraction)
+            request.run(self.app_settings, buffer.data())
+        else:
+            alert_dialog = QtWidgets.QDialog(self, Qt.WindowFlags())
+            alert_dialog.setWindowTitle('Login alert')
+            layout = QtWidgets.QVBoxLayout()
+            message = QtWidgets.QLabel("Your limit of text extractions is over.\nPlease login to get unlimited access")
+            layout.addWidget(message)
+            message.show()
+            alert_dialog.setLayout(layout)
+            alert_dialog.show()
 
     def finish_extraction(self, res):
         self.spinner.stop()
@@ -196,6 +207,11 @@ class AnythingToText(QtWidgets.QWidget):
                 # toaster = ToastNotifier()
                 # toaster.show_toast("Success", "Text is copied to clipboard")
             print('INFO: Copied to the clipboard: ' + extracted_text)
+
+            if self.app_settings['server']['user']['ga_token'] is None:
+                with open(os.path.join(self.app_path, 'settings.json'), 'w') as openfile:
+                    self.app_settings['app']['free_extracts_remaining'] -= 1
+                    json.dump(self.app_settings, openfile, indent=4)
         else:
             print(f"INFO: Unable to read text from image, did not copy")
         self.destroy()
