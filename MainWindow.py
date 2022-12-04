@@ -31,6 +31,34 @@ class MainWindow(QtWidgets.QWidget):
         self.keyboard_manager.runSignal.connect(self.do_screenshot)
         self.keyboard_manager.run()
 
+        # create settings file if it does not exist
+        if getattr(sys, 'frozen', False):
+            self.app_path = os.path.dirname(sys.executable)
+        elif __file__:
+            self.app_path = os.path.dirname(__file__)
+        settings_path = os.path.join(self.app_path, 'settings.json')
+        if os.path.isfile(settings_path) is False:
+            app_settings = {
+                "server": {
+                    "base_path": "https://att.proekt-obroten.su/api/",
+                    "user": {
+                        "email": None,
+                        "ga_token": None,
+                        "name": None,
+                        "photo_url": None,
+                        "uid": None
+                    }
+                },
+                "app": {
+                    "extract_lang": "eng",
+                    "default_extract_lang": True,
+                    "translate_to_lang": "rus",
+                    "free_extracts_remaining": 10
+                }
+            }
+            with open(settings_path, 'w') as openfile:
+                json.dump(app_settings, openfile, indent=4)
+
     def do_screenshot(self):
         self.screenshot_app = AnythingToText(self)
         self.screenshot_app.show()

@@ -1,4 +1,3 @@
-import pathlib
 import subprocess
 import os
 import sys
@@ -42,33 +41,8 @@ class AnythingToText(QtWidgets.QWidget):
             self.app_path = os.path.dirname(sys.executable)
         elif __file__:
             self.app_path = os.path.dirname(__file__)
-        settings_path = os.path.join(self.app_path, 'settings.json')
-        if os.path.isfile(settings_path) is True:
-            with open(settings_path, 'r') as openfile:
-                self.app_settings = json.load(openfile)
-        else:
-            # create settings file if it does not exist
-            print('bla')
-            self.app_settings = {
-                "server": {
-                    "base_path": "https://att.proekt-obroten.su/api/",
-                    "user": {
-                        "email": None,
-                        "ga_token": None,
-                        "name": None,
-                        "photo_url": None,
-                        "uid": None
-                    }
-                },
-                "app": {
-                    "extract_lang": "eng",
-                    "default_extract_lang": True,
-                    "translate_to_lang": "rus",
-                    "free_extracts_remaining": 10
-                }
-            }
-            with open(settings_path, 'w') as openfile:
-                json.dump(self.app_settings, openfile, indent=4)
+        with open(os.path.join(self.app_path, 'settings.json'), 'r') as openfile:
+            self.app_settings = json.load(openfile)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -146,10 +120,10 @@ class AnythingToText(QtWidgets.QWidget):
         if platform_name == "Linux":
             pass
         elif platform_name == "Darwin":
-            img.save('temp.png')
+            img.save(os.path.join(self.app_path, 'temp.png'))
             subprocess.run(["osascript", "-e", "set the clipboard to (read (POSIX file \""
-                            + str(pathlib.Path().absolute()) + "/temp.png\") as JPEG picture)"])
-            os.remove('temp.png')
+                            + str(os.path.join(self.app_path, 'temp.png')) + "\") as JPEG picture)"])
+            os.remove(os.path.join(self.app_path, 'temp.png'))
             subprocess.run(["osascript", "-e", "display notification \"Screenshot is copied to clipboard!\" with "
                                                "title \"Anything To Text\""])
         elif platform_name == "Windows":
@@ -201,7 +175,7 @@ class AnythingToText(QtWidgets.QWidget):
                 pass
             elif platform_name == "Darwin":
                 subprocess.run(["osascript", "-e", "display notification \"Text is copied to clipboard!\" with "
-                                                   "title \"Anything To Text\""])
+                                                   "title \"Anything To Text\""], shell=True)
             elif platform_name == "Windows":
                 pass
                 # toaster = ToastNotifier()
