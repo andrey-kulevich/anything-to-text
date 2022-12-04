@@ -6,6 +6,7 @@ import platform
 import pyperclip
 import requests
 import json
+import threading
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 # from win10toast import ToastNotifier
@@ -30,14 +31,44 @@ class AnythingToText(QtWidgets.QWidget):
         self.coordinates_label = QtWidgets.QLabel(self)
         self.coordinates_label.setStyleSheet("color: #fff;")
 
+        self.spinnerLabel = QtWidgets.QLabel(self)
+        self.spinner = QtGui.QMovie(os.path.join(os.path.dirname(__file__) + "/img/spinner.gif"))
+        self.spinner.setScaledSize(QtCore.QSize(70, 70))
+        self.spinnerLabel.setMovie(self.spinner)
+
+        # import the settings
         app_path = ''
         if getattr(sys, 'frozen', False):
             app_path = os.path.dirname(sys.executable)
         elif __file__:
             app_path = os.path.dirname(__file__)
-        # import the settings
-        with open(os.path.join(app_path, 'settings.json'), 'r') as openfile:
-            self.app_settings = json.load(openfile)
+        settings_path = os.path.join(app_path, 'settings.json')
+        if os.path.isfile(settings_path) is True:
+            with open(settings_path, 'r') as openfile:
+                self.app_settings = json.load(openfile)
+        else:
+            # create settings file if it does not exist
+            print('bla')
+            self.app_settings = {
+                "server": {
+                    "base_path": "https://att.proekt-obroten.su/api/",
+                    "user": {
+                        "email": None,
+                        "ga_token": None,
+                        "name": None,
+                        "photo_url": None,
+                        "uid": None
+                    }
+                },
+                "app": {
+                    "extract_lang": "eng",
+                    "default_extract_lang": True,
+                    "translate_to_lang": "rus",
+                    "free_extracts_remaining": 10
+                }
+            }
+            with open(settings_path, 'w') as openfile:
+                json.dump(self.app_settings, openfile, indent=4)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -141,18 +172,18 @@ class AnythingToText(QtWidgets.QWidget):
         img.save(buffer, "PNG")
         buffer.close()
 
-        res = None
-        if self.app_settings['app']['default_extract_lang'] is False:
-            res = requests.post(
-                self.app_settings['server']['base_path'] + 'anything_to_text', 
-                files={'image': buffer.data()},
-                params={'lang': self.app_settings['app']['extract_lang']}
-            )
-        else:
-            res = requests.post(self.app_settings['server']['base_path'] + 'anything_to_text', files={'image': buffer.data()})
-        extracted_text = res.json()['extracted_text']
-        
-        if res.status_code == 200:
+        self.spinnerLabel.setGeometry(QtCore.QRect(
+            ((self.start.x() + self.end.x()) / 2) - 35, ((self.start.y() + self.end.y()) / 2) - 35, 70, 70))
+        self.spinner.start()
+
+        request = ExtractionRequest(self)
+        request.runSignal.connect(self.finish_extraction)
+        request.run(self.app_settings, buffer.data())
+
+    def finish_extraction(self, res):
+        self.spinner.stop()
+        if res.status_code == 200 and 'extracted_text' in res.json():
+            extracted_text = res.json()['extracted_text']
             pyperclip.copy(extracted_text)
             platform_name = platform.uname().system
             if platform_name == "Linux":
@@ -168,3 +199,28 @@ class AnythingToText(QtWidgets.QWidget):
         else:
             print(f"INFO: Unable to read text from image, did not copy")
         self.destroy()
+
+
+class ExtractionRequest(QtCore.QObject):
+    runSignal = QtCore.pyqtSignal(object)
+
+    def run(self, settings, img):
+        threading.Thread(target=lambda: self.thread_function(settings, img)).start()
+
+    def thread_function(self, settings, img):
+        res = None
+        if settings['app']['default_extract_lang'] is False:
+            res = requests.post(
+                settings['server']['base_path'] + 'anything_to_text',
+                files={'image': img},
+                params={'lang': settings['app']['extract_lang']},
+                headers={'Authorization': settings['server']['user']['ga_token']}
+            )
+        else:
+            res = requests.post(
+                settings['server']['base_path'] + 'anything_to_text',
+                files={'image': img},
+                headers={'Authorization': settings['server']['user']['ga_token']}
+            )
+        self.runSignal.emit(res)
+

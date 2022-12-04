@@ -1,17 +1,17 @@
 {
     "server": {
-        "base_path": "https://att.proekt-obroten.ru/api/",
+        "base_path": "https://att.proekt-obroten.su/api/",
         "user": {
-            "email": "dronaldo12345@gmail.com",
-            "ga_token": "ya29.a0AeTM1ifMglj-Rx3Ocy4jnc6sb3eWr541Q44kqIiQ2d3Wwfypu0vZb0eAFLsJdpHxAU_7hlI5gD9H4rbHWodndORh4pqaXXZaNFzKo0rC_DNe7ctFBSM9-v3_ANH4AGxfrkAfu3ij4uNLP2kTI8_4DSLPENzXaCgYKAVISARMSFQHWtWOmUTuAOrj56FoJfU4f7Vd9hg0163",
-            "name": "\u0410\u043d\u0434\u0440\u0435\u0439 \u041a\u0443\u043b\u0435\u0432\u0438\u0447",
-            "photo_url": "https://lh3.googleusercontent.com/a/ALm5wu2J8QzjB7lfPOXZGB9J19sjW7BdXOx5Q9XW4KYfnw=s96-c",
-            "uid": "vEGEnP6SezR3Zwl6l5WEMghNJPS2"
+            "email": null,
+            "ga_token": null,
+            "name": null,
+            "photo_url": null,
+            "uid": null
         }
     },
     "app": {
-        "extract_lang": "ara",
-        "default_extract_lang": true,
+        "extract_lang": "eng",
+        "default_extract_lang": false,
         "translate_to_lang": "ara",
         "free_extracts_remaining": 10
     }

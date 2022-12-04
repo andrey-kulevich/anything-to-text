@@ -60,7 +60,7 @@ class SettingsWindow(QtWidgets.QDialog):
         self.layout.addWidget(self.extract_lang_combobox)
 
         self.extract_lang_checkbox = QtWidgets.QCheckBox("Define extraction language automatically")
-        self.extract_lang_checkbox.toggled.connect(self.set_extract_lang)
+        self.extract_lang_checkbox.toggled.connect(self.set_default_extract_lang)
         self.extract_lang_checkbox.setChecked(self.app_settings['app']['default_extract_lang'])
         self.layout.addWidget(self.extract_lang_checkbox)
 
@@ -124,3 +124,6 @@ class SettingsWindow(QtWidgets.QDialog):
 
     def set_extract_lang(self):
         self.app_settings['app']['extract_lang'] = self.extract_lang_combobox.currentText().lower()[0:3]
+
+    def set_default_extract_lang(self):
+        self.app_settings['app']['default_extract_lang'] = self.extract_lang_checkbox.isChecked()
