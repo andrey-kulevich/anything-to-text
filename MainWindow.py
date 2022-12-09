@@ -31,32 +31,45 @@ class MainWindow(QtWidgets.QWidget):
         self.keyboard_manager.runSignal.connect(self.do_screenshot)
         self.keyboard_manager.run()
 
-        # create settings file if it does not exist
         if getattr(sys, 'frozen', False):
             self.app_path = os.path.dirname(sys.executable)
         elif __file__:
             self.app_path = os.path.dirname(__file__)
         settings_path = os.path.join(self.app_path, 'settings.json')
+
+        # create settings file if it does not exist
         if os.path.isfile(settings_path) is False:
             app_settings = {
                 "server": {
                     "base_path": "https://att.proekt-obroten.su/api/",
                     "user": {
-                        "email": None,
-                        "ga_token": None,
-                        "name": None,
-                        "photo_url": None,
-                        "uid": None
+                        "uid": None, 
+                        "email": None, 
+                        "name": None, 
+                        "photo_url": None, 
+                        "att_token": None,
+                        "free_use_count": "15",
+                        "screenshots_made": 0, 
+                        "extraction_count": 0
                     }
                 },
                 "app": {
                     "extract_lang": "eng",
-                    "default_extract_lang": True,
-                    "translate_to_lang": "rus",
-                    "free_extracts_remaining": 10
+                    "default_extract_lang": False,
+                    "translate_to_lang": "ara"
                 }
             }
             with open(settings_path, 'w') as openfile:
+                json.dump(app_settings, openfile, indent=4)
+
+        # get temp temp token if user is unauthorized and does not have it
+        app_settings = None
+        with open(os.path.join(self.app_path, 'settings.json'), 'r') as openfile:
+            app_settings = json.load(openfile)
+        if app_settings['server']['user']['att_token'] is None:
+            temp_auth_res = requests.get(app_settings['server']['base_path'] + 'login').json()
+            with open(os.path.join(self.app_path, 'settings.json'), 'w') as openfile:
+                app_settings['server']['user']['att_token'] = temp_auth_res['anon_token']
                 json.dump(app_settings, openfile, indent=4)
 
     def do_screenshot(self):

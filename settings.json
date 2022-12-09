@@ -2,17 +2,19 @@
     "server": {
         "base_path": "https://att.proekt-obroten.su/api/",
         "user": {
-            "email": null,
-            "ga_token": null,
-            "name": null,
-            "photo_url": null,
-            "uid": null
+            "uid": "vEGEnP6SezR3Zwl6l5WEMghNJPS2",
+            "email": "dronaldo12345@gmail.com",
+            "name": "\u0410\u043d\u0434\u0440\u0435\u0439 \u041a\u0443\u043b\u0435\u0432\u0438\u0447",
+            "photo_url": "https://lh3.googleusercontent.com/a/ALm5wu2J8QzjB7lfPOXZGB9J19sjW7BdXOx5Q9XW4KYfnw=s96-c",
+            "att_token": "3a5UoEv1TPmkzUmjgjIc841nTT4",
+            "free_use_count": 15,
+            "screenshots_made": 0,
+            "extraction_count": 0
         }
     },
     "app": {
         "extract_lang": "eng",
         "default_extract_lang": false,
-        "translate_to_lang": "ara",
-        "free_extracts_remaining": 10
+        "translate_to_lang": "ara"
     }
 }

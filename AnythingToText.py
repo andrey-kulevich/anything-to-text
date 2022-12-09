@@ -135,13 +135,17 @@ class AnythingToText(QtWidgets.QWidget):
             user32.CloseClipboard()
             # toaster = ToastNotifier()
             # toaster.show_toast("Success", "Screenshot is copied to clipboard")
+        
+        ress = requests.get(self.app_settings['server']['base_path'] + 'screenshot', 
+                                     headers={'auth': self.app_settings['server']['user']['att_token']})
+        print(ress.status_code)
         self.destroy()
 
     def extract_text(self, img):
         """
         extract text from given image
         """
-        if self.app_settings['server']['user']['ga_token'] is not None \
+        if self.app_settings['server']['user']['att_token'] is not None \
                 or self.app_settings['app']['free_extracts_remaining'] > 0:
             buffer = QtCore.QBuffer()
             buffer.open(QtCore.QBuffer.ReadWrite)
@@ -175,14 +179,14 @@ class AnythingToText(QtWidgets.QWidget):
                 pass
             elif platform_name == "Darwin":
                 subprocess.run(["osascript", "-e", "display notification \"Text is copied to clipboard!\" with "
-                                                   "title \"Anything To Text\""], shell=True)
+                                                   "title \"Anything To Text\""])
             elif platform_name == "Windows":
                 pass
                 # toaster = ToastNotifier()
                 # toaster.show_toast("Success", "Text is copied to clipboard")
             print('INFO: Copied to the clipboard: ' + extracted_text)
 
-            if self.app_settings['server']['user']['ga_token'] is None:
+            if self.app_settings['server']['user']['att_token'] is None:
                 with open(os.path.join(self.app_path, 'settings.json'), 'w') as openfile:
                     self.app_settings['app']['free_extracts_remaining'] -= 1
                     json.dump(self.app_settings, openfile, indent=4)
@@ -204,13 +208,13 @@ class ExtractionRequest(QtCore.QObject):
                 settings['server']['base_path'] + 'anything_to_text',
                 files={'image': img},
                 params={'lang': settings['app']['extract_lang']},
-                headers={'Authorization': settings['server']['user']['ga_token']}
+                headers={'auth': settings['server']['user']['att_token']}
             )
         else:
             res = requests.post(
                 settings['server']['base_path'] + 'anything_to_text',
                 files={'image': img},
-                headers={'Authorization': settings['server']['user']['ga_token']}
+                headers={'auth': settings['server']['user']['att_token']}
             )
         self.runSignal.emit(res)
 

@@ -45,6 +45,10 @@ class SettingsWindow(QtWidgets.QDialog):
         with open(os.path.join(self.app_path, 'settings.json'), 'r') as openfile:
             self.app_settings = json.load(openfile)
 
+        user_data_res = requests.get(self.app_settings['server']['base_path'] + 'get_user', 
+                                     headers={'auth': self.app_settings['server']['user']['att_token']}).json()
+        self.app_settings['server']['user'] = user_data_res['user']
+
         self.layout = QtWidgets.QVBoxLayout()
 
         self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
@@ -74,7 +78,7 @@ class SettingsWindow(QtWidgets.QDialog):
 
         self.login_button = QtWidgets.QPushButton(
             'Login with Google'
-            if self.app_settings['server']['user']['ga_token'] is None
+            if self.app_settings['server']['user']['name'] is None
             else 'Logged in as %s' % (self.app_settings['server']['user']['name'])
         )
         self.login_button.clicked.connect(self.start_login_loop)
@@ -82,10 +86,13 @@ class SettingsWindow(QtWidgets.QDialog):
 
         statistics_label = QtWidgets.QLabel(
             "<b>Statistics:</b><br>"
-            "Free extractions remaining: <b>%d</b><br>"
-            "Screenshots made: <b>121</b><br>"
-            "Number of text extractions: <b>37</b><br>"
-            "Number of translates: <b>25</b>" % (self.app_settings['app']['free_extracts_remaining'])
+            "Free extractions remaining: <b>%s</b><br>"
+            "Screenshots made: <b>%d</b><br>"
+            "Number of text extractions: <b>%d</b><br>"
+            "Number of translates: <b>0</b>" 
+            % (self.app_settings['server']['user']['free_use_count'], 
+               self.app_settings['server']['user']['screenshots_made'],
+               self.app_settings['server']['user']['extraction_count'])
         )
         self.layout.addWidget(statistics_label)
 
