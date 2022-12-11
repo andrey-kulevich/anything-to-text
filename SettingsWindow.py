@@ -89,7 +89,9 @@ class SettingsWindow(QtWidgets.QDialog):
             "Free extractions remaining: <b>%s</b><br>"
             "Screenshots made: <b>%d</b><br>"
             "Number of text extractions: <b>%d</b><br>"
-            "Number of translates: <b>0</b>" 
+            "Number of translations: <b>0</b><br>"
+            "<br><b>Keyboard shortcuts:</b><br>"
+            "<b>Ctrl</b> + <b>F1</b> – run screen area selection" 
             % (self.app_settings['server']['user']['free_use_count'], 
                self.app_settings['server']['user']['screenshots_made'],
                self.app_settings['server']['user']['extraction_count'])
